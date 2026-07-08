@@ -13,17 +13,21 @@ function StudentDashboard() {
   const navigate = useNavigate();
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setReceiptImage(file);
+    try {
+      const file = e?.target?.files?.[0];
+      if (file && typeof file === 'object') {
+        setReceiptImage(file);
+      }
+    } catch (err) {
+      console.error('[StudentDashboard] File error:', err);
     }
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     setMessage('');
 
-    if (!leaseId || !amount || !reference || !receiptImage) {
+    if (!leaseId?.trim?.() || !amount?.trim?.() || !reference?.trim?.() || !receiptImage) {
       setMessage('Please fill in all fields');
       setMessageType('error');
       return;
@@ -38,23 +42,36 @@ function StudentDashboard() {
       formData.append('transaction_ref', reference);
       formData.append('receipt_image', receiptImage);
 
-      await api.post('/payments/', formData, {
+      const response = await api.post('/payments/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      setMessage('Payment submitted successfully!');
-      setMessageType('success');
-      setLeaseId('');
-      setAmount('');
-      setReference('');
-      setReceiptImage(null);
-      document.getElementById('fileInput').value = '';
+      if (response?.status === 200 || response?.status === 201) {
+        setMessage('Payment submitted successfully!');
+        setMessageType('success');
+        setLeaseId('');
+        setAmount('');
+        setReference('');
+        setReceiptImage(null);
+        
+        try {
+          const fileInput = document.getElementById('fileInput');
+          if (fileInput) fileInput.value = '';
+        } catch (err) {
+          console.warn('[StudentDashboard] Could not reset file input:', err);
+        }
 
-      setTimeout(() => {
-        setMessage('');
-      }, 3000);
+        const timeoutId = setTimeout(() => {
+          setMessage('');
+        }, 3000);
+        return () => clearTimeout(timeoutId);
+      }
     } catch (error) {
-      setMessage(error.response?.data?.detail || 'Failed to submit payment. Please try again.');
+      const errorMsg = 
+        error?.response?.data?.detail ??
+        error?.message ??
+        'Failed to submit payment. Please try again.';
+      setMessage(errorMsg);
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -62,9 +79,14 @@ function StudentDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    navigate('/login');
+    try {
+      localStorage?.removeItem?.('access_token');
+      localStorage?.removeItem?.('refresh_token');
+      navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('[StudentDashboard] Logout error:', err);
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

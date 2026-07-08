@@ -10,25 +10,57 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     setError('');
     setLoading(true);
 
     try {
       const res = await api.post('/auth/token/', { username, password });
-      localStorage.setItem('access_token', res.data.access);
-      localStorage.setItem('refresh_token', res.data.refresh);
       
-      // Decode JWT to get role (simple base64 decode)
-      const base64Url = res.data.access.split('.')[1];
-      const payload = JSON.parse(atob(base64Url));
-      const role = payload.role;
+      // Defensive data extraction with nullish coalescing
+      const accessToken = res?.data?.access ?? null;
+      const refreshToken = res?.data?.refresh ?? null;
       
-      if (role === 'STUDENT') navigate('/student');
-      else if (role === 'CARETAKER') navigate('/caretaker');
-      else if (role === 'LANDLORD') navigate('/landlord');
+      if (!accessToken || !refreshToken) {
+        throw new Error('Invalid response: missing tokens');
+      }
+
+      try {
+        localStorage?.setItem?.('access_token', accessToken);
+        localStorage?.setItem?.('refresh_token', refreshToken);
+      } catch (storageErr) {
+        console.error('[Login] Storage error:', storageErr);
+        throw new Error('Failed to save authentication. Please check browser storage permissions.');
+      }
+      
+      // Safely decode JWT
+      try {
+        const parts = accessToken?.split?.('.') ?? [];
+        const base64Url = parts[1] ?? '';
+        if (!base64Url) throw new Error('Invalid token format');
+        
+        const payload = JSON.parse(atob(base64Url));
+        const role = payload?.role ?? null;
+        
+        if (role === 'STUDENT') {
+          navigate('/student', { replace: true });
+        } else if (role === 'CARETAKER') {
+          navigate('/caretaker', { replace: true });
+        } else if (role === 'LANDLORD') {
+          navigate('/landlord', { replace: true });
+        } else {
+          throw new Error(`Unknown role: ${role}`);
+        }
+      } catch (jwtErr) {
+        console.error('[Login] JWT decode error:', jwtErr);
+        setError('Failed to decode authentication token. Please try again.');
+      }
     } catch (error) {
-      setError(error.response?.data?.detail || 'Login failed. Please try again.');
+      const errorMessage = 
+        error?.response?.data?.detail ??
+        error?.message ??
+        'Login failed. Please check your credentials and try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
