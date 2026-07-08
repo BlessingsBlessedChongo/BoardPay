@@ -32,24 +32,46 @@ function LandlordDashboard() {
     setLoading(true);
     try {
       const res = await api.get('/analytics/landlord-stats/');
-      setStats(res.data);
+      const data = res?.data ?? {};
+      
+      // Validate and normalize stats
+      const normalizedStats = {
+        monthly_revenue: Array.isArray(data?.monthly_revenue) ? data.monthly_revenue : [],
+        occupancy: {
+          occupied: typeof data?.occupancy?.occupied === 'number' ? data.occupancy.occupied : 0,
+          vacant: typeof data?.occupancy?.vacant === 'number' ? data.occupancy.vacant : 0
+        },
+        pending_count: typeof data?.pending_count === 'number' ? data.pending_count : 0
+      };
+      
+      setStats(normalizedStats);
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      console.error('[LandlordDashboard] Failed to fetch stats:', error);
+      setStats({
+        monthly_revenue: [],
+        occupancy: { occupied: 0, vacant: 0 },
+        pending_count: 0
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    navigate('/login');
+    try {
+      localStorage?.removeItem?.('access_token');
+      localStorage?.removeItem?.('refresh_token');
+      navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('[LandlordDashboard] Logout error:', err);
+      navigate('/login', { replace: true });
+    }
   };
 
-  // Transform occupancy data for pie chart
+  // Transform occupancy data for pie chart with defensive defaults
   const occupancyData = [
-    { name: 'Occupied', value: stats.occupancy?.occupied || 0 },
-    { name: 'Vacant', value: stats.occupancy?.vacant || 0 }
+    { name: 'Occupied', value: Math.max(0, stats?.occupancy?.occupied ?? 0) },
+    { name: 'Vacant', value: Math.max(0, stats?.occupancy?.vacant ?? 0) }
   ];
 
   const COLORS = ['#00f0ff', '#ef4444'];
@@ -75,9 +97,9 @@ function LandlordDashboard() {
           {/* Monthly Revenue Chart */}
           <div className="lg:col-span-2 glass-card p-6">
             <h2 className="text-xl font-semibold text-white mb-6">Monthly Revenue</h2>
-            {stats.monthly_revenue && stats.monthly_revenue.length > 0 ? (
+            {(stats?.monthly_revenue?.length ?? 0) > 0 ? (
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={stats.monthly_revenue}>
+                <BarChart data={stats.monthly_revenue ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="month" stroke="#94a3b8" />
                   <YAxis stroke="#94a3b8" />
@@ -104,7 +126,7 @@ function LandlordDashboard() {
           <div className="glass-card p-6 flex flex-col justify-center">
             <h2 className="text-xl font-semibold text-white mb-4">Pending Verifications</h2>
             <div className="text-center">
-              <p className="text-6xl font-bold text-cyan-400 mb-2">{stats.pending_count}</p>
+              <p className="text-6xl font-bold text-cyan-400 mb-2">{stats?.pending_count ?? 0}</p>
               <p className="text-gray-400 text-sm">payments awaiting verification</p>
             </div>
           </div>
@@ -112,21 +134,21 @@ function LandlordDashboard() {
           {/* Occupancy Rate Pie Chart */}
           <div className="lg:col-span-2 glass-card p-6">
             <h2 className="text-xl font-semibold text-white mb-6">Occupancy Rate</h2>
-            {occupancyData[0].value + occupancyData[1].value > 0 ? (
+            {(occupancyData?.[0]?.value ?? 0) + (occupancyData?.[1]?.value ?? 0) > 0 ? (
               <ResponsiveContainer width="100%" height={350}>
                 <PieChart>
                   <Pie
-                    data={occupancyData}
+                    data={occupancyData ?? []}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
                     outerRadius={100}
-                    label={({ name, value }) => `${name}: ${value}`}
+                    label={({ name, value }) => `${name ?? 'N/A'}: ${value ?? 0}`}
                   >
-                    {occupancyData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
+                    {occupancyData?.map?.((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS?.[index % (COLORS?.length ?? 1)] ?? '#00f0ff'} />
+                    )) ?? null}
                   </Pie>
                   <Tooltip
                     contentStyle={{
@@ -149,11 +171,11 @@ function LandlordDashboard() {
           <div className="space-y-4">
             <div className="glass-card p-6">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Occupied Units</h3>
-              <p className="text-3xl font-bold text-cyan-400">{stats.occupancy?.occupied || 0}</p>
+              <p className="text-3xl font-bold text-cyan-400">{stats?.occupancy?.occupied ?? 0}</p>
             </div>
             <div className="glass-card p-6">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Vacant Units</h3>
-              <p className="text-3xl font-bold text-red-400">{stats.occupancy?.vacant || 0}</p>
+              <p className="text-3xl font-bold text-red-400">{stats?.occupancy?.vacant ?? 0}</p>
             </div>
           </div>
         </div>

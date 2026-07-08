@@ -20,18 +20,25 @@ function CaretakerDashboard() {
     setFetchLoading(true);
     try {
       const res = await api.get('/payments/?status=PENDING');
-      setPendingPayments(res.data);
+      const payments = res?.data ?? [];
+      if (Array.isArray(payments)) {
+        setPendingPayments(payments);
+      } else {
+        console.warn('[CaretakerDashboard] Unexpected data format:', payments);
+        setPendingPayments([]);
+      }
     } catch (error) {
-      console.error('Failed to fetch pending payments:', error);
+      console.error('[CaretakerDashboard] Failed to fetch pending payments:', error);
+      setPendingPayments([]);
     } finally {
       setFetchLoading(false);
     }
   };
 
   const handleAction = useCallback(async (action) => {
-    if (!selectedPayment || loading) return;
+    if (!selectedPayment?.id || loading) return;
 
-    if (action === 'reject' && !reason.trim()) {
+    if (action === 'reject' && !reason?.trim?.()) {
       alert('Please provide a rejection reason');
       return;
     }
@@ -39,45 +46,64 @@ function CaretakerDashboard() {
     setLoading(true);
 
     try {
-      await api.patch(`/payments/${selectedPayment.id}/verify/`, {
+      const paymentId = selectedPayment?.id;
+      const response = await api.patch(`/payments/${paymentId}/verify/`, {
         action,
         reason: action === 'reject' ? reason : undefined
       });
 
-      setSelectedPayment(null);
-      setReason('');
-      await fetchPending();
+      if (response?.status === 200) {
+        setSelectedPayment(null);
+        setReason('');
+        await fetchPending();
+      }
     } catch (error) {
-      alert(error.response?.data?.detail || `Failed to ${action} payment. Please try again.`);
+      const errorMsg = 
+        error?.response?.data?.detail ??
+        error?.message ??
+        `Failed to ${action} payment. Please try again.`;
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, [selectedPayment, reason, loading]);
+  }, [selectedPayment?.id, reason, loading]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (!selectedPayment) return;
-      if (e.key === 'a' || e.key === 'A') {
+      if (!selectedPayment?.id) return;
+      if (e?.key === 'a' || e?.key === 'A') {
         handleAction('approve');
-      } else if (e.key === 'r' || e.key === 'R') {
+      } else if (e?.key === 'r' || e?.key === 'R') {
         handleAction('reject');
       }
     };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedPayment, handleAction]);
+    
+    try {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    } catch (err) {
+      console.error('[CaretakerDashboard] Keyboard listener error:', err);
+    }
+  }, [selectedPayment?.id, handleAction]);
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    navigate('/login');
+    try {
+      localStorage?.removeItem?.('access_token');
+      localStorage?.removeItem?.('refresh_token');
+      navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('[CaretakerDashboard] Logout error:', err);
+      navigate('/login', { replace: true });
+    }
   };
 
   const getOCRBadge = (ocrMatch) => {
-    if (ocrMatch) {
+    if (ocrMatch === true) {
       return <span className="status-badge status-match">✅ Match</span>;
-    } else {
+    } else if (ocrMatch === false) {
       return <span className="status-badge status-nomatch">⚠️ No Match</span>;
+    } else {
+      return <span className="status-badge status-nomatch">❓ Unknown</span>;
     }
   };
 
@@ -102,34 +128,37 @@ function CaretakerDashboard() {
           <div className="flex-1 flex items-center justify-center">
             <p className="text-gray-400">Loading payments...</p>
           </div>
-        ) : pendingPayments.length === 0 ? (
+        ) : (pendingPayments?.length ?? 0) === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-gray-400 text-center px-4">No pending payments to verify</p>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
-            {pendingPayments.map(payment => (
-              <div
-                key={payment.id}
-                onClick={() => setSelectedPayment(payment)}
-                className={`p-4 border-l-4 cursor-pointer transition-all ${
-                  selectedPayment?.id === payment.id
-                    ? 'border-l-cyan-500 bg-cyan-900/20'
-                    : 'border-l-gray-700 hover:bg-gray-800/30'
-                }`}
-              >
-                <div className="flex justify-between items-start gap-2 mb-2">
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">ID: {payment.id}</p>
-                    <p className="text-sm text-gray-400">Ref: {payment.transaction_ref}</p>
+            {pendingPayments?.map?.(payment => {
+              if (!payment?.id) return null;
+              return (
+                <div
+                  key={payment.id}
+                  onClick={() => setSelectedPayment(payment)}
+                  className={`p-4 border-l-4 cursor-pointer transition-all ${
+                    selectedPayment?.id === payment.id
+                      ? 'border-l-cyan-500 bg-cyan-900/20'
+                      : 'border-l-gray-700 hover:bg-gray-800/30'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <div className="flex-1">
+                      <p className="font-semibold text-white">ID: {payment.id ?? 'N/A'}</p>
+                      <p className="text-sm text-gray-400">Ref: {payment.transaction_ref ?? 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-cyan-400 font-medium">${payment.amount ?? '0'}</p>
+                    {getOCRBadge(payment.ocr_match)}
                   </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <p className="text-cyan-400 font-medium">${payment.amount}</p>
-                  {getOCRBadge(payment.ocr_match)}
-                </div>
-              </div>
-            ))}
+              );
+            }) ?? null}
           </div>
         )}
       </div>
@@ -164,34 +193,34 @@ function CaretakerDashboard() {
                 <h3 className="text-lg font-semibold text-white">Verification Details</h3>
               </div>
 
-              {selectedPayment ? (
+              {selectedPayment?.id ? (
                 <div className="flex-1 flex flex-col p-4">
                   <div className="space-y-4 flex-1">
                     <div className="glass-card p-4">
                       <p className="text-gray-400 text-sm mb-1">Amount</p>
-                      <p className="text-2xl font-bold text-cyan-400">${selectedPayment.amount}</p>
+                      <p className="text-2xl font-bold text-cyan-400">${selectedPayment?.amount ?? '0'}</p>
                     </div>
 
                     <div className="glass-card p-4">
                       <p className="text-gray-400 text-sm mb-1">Transaction Reference</p>
-                      <p className="text-white font-mono">{selectedPayment.transaction_ref}</p>
+                      <p className="text-white font-mono">{selectedPayment?.transaction_ref ?? 'N/A'}</p>
                     </div>
 
                     <div className="glass-card p-4">
                       <p className="text-gray-400 text-sm mb-2">OCR Status</p>
-                      {getOCRBadge(selectedPayment.ocr_match)}
+                      {getOCRBadge(selectedPayment?.ocr_match)}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Rejection Reason {selectedPayment && <span className="text-gray-500">(required for reject)</span>}
+                        Rejection Reason <span className="text-gray-500">(required for reject)</span>
                       </label>
                       <textarea
                         placeholder="Enter reason if rejecting..."
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
+                        value={reason ?? ''}
+                        onChange={(e) => setReason(e?.target?.value ?? '')}
                         className="glass-input w-full resize-none focus:ring-2 focus:ring-cyan-500"
-                        rows="4"
+                        rows={4}
                         disabled={loading}
                       />
                     </div>
