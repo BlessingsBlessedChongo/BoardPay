@@ -30,17 +30,17 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-white">Product</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Features
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Pricing
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Changelog
                 </a>
               </li>
@@ -52,17 +52,17 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-white">Company</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   About
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Careers
                 </a>
               </li>
@@ -74,17 +74,17 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-white">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Privacy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   Terms
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+                <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                   API Docs
                 </a>
               </li>
@@ -98,13 +98,13 @@ export default function Footer() {
               © {currentYear} BoardPay. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 sm:mt-0">
-              <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+              <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                 Twitter
               </a>
-              <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+              <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                 GitHub
               </a>
-              <a href="#" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
+              <a href="javascript:void(0)" className="text-gray-400 hover:text-cyan-400 transition-colors text-sm">
                 Discord
               </a>
             </div>
