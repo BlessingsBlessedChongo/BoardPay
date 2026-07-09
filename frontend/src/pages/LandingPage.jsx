@@ -481,14 +481,14 @@ function HowItWorks() {
           </div>
         </div>
 
-        {/* Workflow illustration placeholder */}
+        {/* Workflow illustration: Three Simple Steps */}
         <FadeIn delay={0.3}>
-          <div className="mt-16">
-            {/* Insert workflow illustration */}
-            <Placeholder
-              text="Insert workflow illustration — three phone screens side by side"
-              aspect=""
-              className="w-full h-52"
+          <div className="mt-16 rounded-2xl overflow-hidden border border-white/10">
+            <img 
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9SRDAYKxb46bLMImG7JciUIKac5HEs.png"
+              alt="Three Simple Steps - Upload Receipt, Verify in Seconds, Monitor Everything Live"
+              className="w-full h-auto object-cover"
+              loading="lazy"
             />
           </div>
         </FadeIn>
