@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { scaleLinear } from 'd3';
 import { Sparkles, FileText, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
+import AuditTrail from '../components/AuditTrail.jsx';
 
 // Mock financial flows data (matches spec exactly)
 const FINANCIAL_FLOWS = {
@@ -590,6 +591,9 @@ export default function LandlordDashboard() {
         {/* (Toast handled within components) */}
 
         <div className="space-y-6">
+          {/* 0. Immutable Audit Trail */}
+          <AuditTrail />
+
           {/* 1. Financial Flow Map */}
           <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Financial Flow — This Month</h2>
