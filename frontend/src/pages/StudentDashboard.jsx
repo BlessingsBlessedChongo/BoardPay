@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Mic, Send, MessageCircle, X, CheckCircle, AlertCircle, Zap, ChevronRight } from 'lucide-react';
+import api from '../api/axios';
 import TopNav from '../components/TopNav';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import WelcomeHero from '../components/WelcomeHero';
@@ -20,42 +21,14 @@ export default function StudentDashboard() {
       setIsLoading(true);
       setError(null);
       try {
-        // Simulate API latency (1.2s) as per spec
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        
-        // Mock data matching the schema from spec
-        const mockData = {
-          student_name: "Chanda Mwamba",
-          room_display: "Room 4B, Ndola Campus Housing",
-          payment_streak: 4,
-          next_due_date: "2026-07-25",
-          days_remaining: 14,
-          current_month_status: {
-            current_step: "CARETAKER_REVIEW",
-            steps_completed: ["RECEIPT_UPLOADED"],
-            steps_pending: ["CARETAKER_REVIEW", "SECURED_ON_LEDGER"],
-            extracted_amount: 2500
-          },
-          active_maintenance: [
-            {
-              id: 102,
-              title: "Leaking Tap in Bathroom",
-              status: "IN_PROGRESS",
-              created_at_relative: "2 days ago"
-            },
-            {
-              id: 103,
-              title: "Broken Light Fixture - Common Area",
-              status: "PENDING",
-              created_at_relative: "1 day ago"
-            }
-          ]
-        };
-        
-        setDashboardData(mockData);
+        const response = await api.get('/student/dashboard/');
+        setDashboardData(response.data);
       } catch (err) {
-        setError('Failed to load dashboard. Please try again.');
-        console.error('[v0] Dashboard fetch error:', err);
+        setError(
+          err?.response?.data?.error || 
+          'Failed to load dashboard. Please try again.'
+        );
+        console.error('[StudentDashboard] Fetch error:', err);
       } finally {
         setIsLoading(false);
       }
@@ -100,7 +73,10 @@ export default function StudentDashboard() {
               <WelcomeHero data={dashboardData} />
               
               {/* Async Upload & Preview */}
-              <UploadPanel />
+              <UploadPanel onDataUpdate={() => {
+                // Optionally refresh dashboard after upload
+                window.location.reload();
+              }} />
               
               {/* Billing Timeline & Maintenance */}
               <BillingTimeline data={dashboardData} />

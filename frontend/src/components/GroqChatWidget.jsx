@@ -1,51 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send } from 'lucide-react';
-
-// Simulated API function for chat
-async function mockChatAPI(message) {
-  // This function can be easily swapped for a real API call:
-  // return fetch('/api/ai/chat/', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ message })
-  // }).then(r => r.json())
-
-  // Simulate network latency
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Simple keyword matching for demo responses
-  const lowerMessage = message.toLowerCase();
-  
-  if (lowerMessage.includes('rent') || lowerMessage.includes('june')) {
-    return {
-      reply: 'Your June rent of ZMW 2,500 is currently in Caretaker Review. Once verified, it will be secured on the ledger within 24-48 hours.'
-    };
-  }
-  
-  if (lowerMessage.includes('maintenance') || lowerMessage.includes('broken') || lowerMessage.includes('fix')) {
-    return {
-      reply: 'To request maintenance, please use the Maintenance Request feature in your dashboard. Your request will be assigned to the caretaker for immediate attention.'
-    };
-  }
-  
-  if (lowerMessage.includes('lease') || lowerMessage.includes('contract')) {
-    return {
-      reply: 'Your lease is valid through December 31, 2024. You can view or download a copy from your dashboard under "Documents".'
-    };
-  }
-  
-  // Fallback response
-  return {
-    reply: 'Thank you for your question! I\'m here to help with questions about your rent, lease, or maintenance requests. Feel free to ask!'
-  };
-}
+import api from '../api/axios';
 
 export default function GroqChatWidget({ isOpen, onClose }) {
   const [messages, setMessages] = useState([
     {
       id: 'init-1',
       sender: 'assistant',
-      text: 'Hi Chanda! Ask me anything about your rent, lease, or maintenance requests.'
+      text: 'Hi! Ask me anything about your rent, lease, or maintenance requests.'
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -82,11 +44,13 @@ export default function GroqChatWidget({ isOpen, onClose }) {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
+    const userInputValue = inputValue;
+
     // Add user message
     const userMessage = {
       id: `user-${Date.now()}`,
       sender: 'user',
-      text: inputValue
+      text: userInputValue
     };
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
@@ -101,23 +65,24 @@ export default function GroqChatWidget({ isOpen, onClose }) {
     }]);
 
     try {
-      // Call mock API
-      const response = await mockChatAPI(inputValue);
+      // Call real API via Axios
+      const response = await api.post('/ai/chat/', { message: userInputValue });
 
       // Remove typing indicator and add response
       setMessages(prev => prev.filter(m => m.id !== typingId));
       setMessages(prev => [...prev, {
         id: `assistant-${Date.now()}`,
         sender: 'assistant',
-        text: response.reply
+        text: response.data.reply
       }]);
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error('[GroqChatWidget] Chat error:', error);
       setMessages(prev => prev.filter(m => m.id !== typingId));
+      const errorText = error?.response?.data?.error || 'Sorry, I encountered an error. Please try again.';
       setMessages(prev => [...prev, {
         id: `error-${Date.now()}`,
         sender: 'assistant',
-        text: 'Sorry, I encountered an error. Please try again.'
+        text: errorText
       }]);
     } finally {
       setIsLoading(false);

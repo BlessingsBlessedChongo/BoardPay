@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Mic, Loader, CheckCircle, AlertCircle, Edit2 } from 'lucide-react';
+import api from '../api/axios';
 
-export default function UploadPanel() {
+export default function UploadPanel({ onDataUpdate }) {
   const [uploadState, setUploadState] = useState('idle'); // idle, uploading, success, error
   const [previewData, setPreviewData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [isEditing, setIsEditing] = useState({});
@@ -11,54 +13,62 @@ export default function UploadPanel() {
   const fileInputRef = useRef(null);
   const dragZoneRef = useRef(null);
 
-  // Simulate voice transcription
+  // Upload file to backend via Axios with FormData
+  const uploadFileToBackend = async (file) => {
+    setUploadState('uploading');
+    setErrorMessage('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await api.post('/payments/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      if (response.data.success) {
+        const extractedData = response.data.extracted_data;
+        setPreviewData({
+          payment_id: null,
+          status: "PENDING",
+          extracted_data: extractedData,
+          ocr_match_flag: true
+        });
+        setEditValues({
+          amount: extractedData.amount || '',
+          reference: extractedData.transaction_reference || '',
+          date: extractedData.date || ''
+        });
+        setUploadState('success');
+      } else {
+        throw new Error(response.data.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('[UploadPanel] Upload error:', error);
+      setErrorMessage(
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to upload file. Please try again.'
+      );
+      setUploadState('error');
+      setTimeout(() => setUploadState('idle'), 4000);
+    }
+  };
+
+  // Simulate voice transcription (placeholder for actual speech-to-text)
   const startVoiceTranscription = async () => {
     setIsListening(true);
     setTranscription('');
+    setErrorMessage('');
     
-    // Pulse animation for 2 seconds
+    // Simulate listening for 2 seconds
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Auto-populate transcription
-    setTranscription('Uploading 2,500 Kwacha for July rent');
+    // In production, integrate with Web Speech API or a speech service
+    setTranscription('Voice transcription feature requires Speech API setup');
     setIsListening(false);
-
-    // Immediately trigger file upload simulation
-    simulateFileUpload();
-  };
-
-  // Simulate file upload
-  const simulateFileUpload = async () => {
-    setUploadState('uploading');
-    
-    try {
-      // Simulate POST to /api/payments/upload/
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock successful OCR response
-      const mockResponse = {
-        payment_id: 451,
-        status: "PENDING",
-        extracted_data: {
-          amount: 2500.00,
-          transaction_reference: "TXN987654321",
-          date: "2026-07-09"
-        },
-        ocr_match_flag: true
-      };
-      
-      setPreviewData(mockResponse);
-      setEditValues({
-        amount: mockResponse.extracted_data.amount,
-        reference: mockResponse.extracted_data.transaction_reference,
-        date: mockResponse.extracted_data.date
-      });
-      setUploadState('success');
-    } catch (error) {
-      console.error('[v0] Upload error:', error);
-      setUploadState('error');
-      setTimeout(() => setUploadState('idle'), 3000);
-    }
   };
 
   // Handle file drag and drop
@@ -80,15 +90,19 @@ export default function UploadPanel() {
     dragZoneRef.current?.classList.remove('border-cyan-500', 'bg-cyan-500/5');
     
     const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      simulateFileUpload();
+    if (files.length > 0 && files[0].type.startsWith('image/')) {
+      uploadFileToBackend(files[0]);
+    } else {
+      setErrorMessage('Please drop an image file');
+      setUploadState('error');
+      setTimeout(() => setUploadState('idle'), 3000);
     }
   };
 
   const handleFileInput = (e) => {
     const files = e.target.files;
     if (files.length > 0) {
-      simulateFileUpload();
+      uploadFileToBackend(files[0]);
     }
   };
 
@@ -100,6 +114,37 @@ export default function UploadPanel() {
   // Update editable field
   const handleEditChange = (field, value) => {
     setEditValues(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Submit the payment with edited values
+  const handleSubmitPayment = async () => {
+    try {
+      setUploadState('uploading');
+      
+      // Call API to submit payment with extracted/edited data
+      const response = await api.post('/payments/', {
+        amount: editValues.amount,
+        transaction_ref: editValues.reference,
+        // receipt_image would need to be uploaded separately with FormData if needed
+      });
+      
+      setPreviewData(null);
+      setUploadState('idle');
+      setTranscription('');
+      setEditValues({});
+      
+      if (onDataUpdate) {
+        onDataUpdate();
+      }
+    } catch (error) {
+      console.error('[UploadPanel] Submit error:', error);
+      setErrorMessage(
+        error?.response?.data?.detail ||
+        error?.message ||
+        'Failed to submit payment. Please try again.'
+      );
+      setUploadState('error');
+    }
   };
 
   if (previewData && uploadState === 'success') {
@@ -118,7 +163,7 @@ export default function UploadPanel() {
           <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
           <div>
             <p className="text-green-300 font-medium text-sm">Receipt Verified</p>
-            <p className="text-green-200/60 text-xs">OCR match confirmed - details ready for review</p>
+            <p className="text-green-200/60 text-xs">OCR data extracted - review and confirm details below</p>
           </div>
         </div>
 
@@ -172,7 +217,7 @@ export default function UploadPanel() {
               />
             ) : (
               <div className="flex items-center justify-between group">
-                <span className="font-mono text-slate-300">{editValues.reference}</span>
+                <span className="font-mono text-slate-300">{editValues.reference || 'N/A'}</span>
                 <button
                   onClick={() => toggleEdit('reference')}
                   className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-cyan-500/20 rounded-lg"
@@ -200,7 +245,7 @@ export default function UploadPanel() {
               />
             ) : (
               <div className="flex items-center justify-between group">
-                <span className="text-slate-300">{editValues.date}</span>
+                <span className="text-slate-300">{editValues.date || 'N/A'}</span>
                 <button
                   onClick={() => toggleEdit('date')}
                   className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-cyan-500/20 rounded-lg"
@@ -225,10 +270,12 @@ export default function UploadPanel() {
               Cancel
             </button>
             <button
+              onClick={handleSubmitPayment}
+              disabled={uploadState === 'uploading'}
               className="flex-1 px-4 py-3 rounded-lg bg-cyan-500 text-black font-semibold
-                         hover:brightness-110 transition-all active:scale-95"
+                         hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
             >
-              Confirm & Submit
+              {uploadState === 'uploading' ? 'Submitting...' : 'Confirm & Submit'}
             </button>
           </div>
         </div>
@@ -244,6 +291,17 @@ export default function UploadPanel() {
       <p className="text-slate-400 text-sm mb-6">
         Upload proof or use voice to log your payment instantly
       </p>
+
+      {/* Error Alert */}
+      {errorMessage && (
+        <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <div>
+            <p className="text-red-300 font-medium text-sm">Error</p>
+            <p className="text-red-200/60 text-xs">{errorMessage}</p>
+          </div>
+        </div>
+      )}
 
       {/* Drag & Drop Zone */}
       <div

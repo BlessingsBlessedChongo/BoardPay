@@ -2,9 +2,12 @@ django>=4.2
 djangorestframework
 djangorestframework-simplejwt
 django-cors-headers
+python-dotenv
 Pillow
 pytesseract
 web3
+google-generativeai
+groq
 
 # Optional - only needed if you re-enable async blockchain logging via Celery
 # celery

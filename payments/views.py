@@ -1,11 +1,13 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Payment
 from .serializers import PaymentSerializer
 from .ocr import check_reference
 from .blockchain import log_payment_to_chain
+from .gemini_service import extract_receipt_data
 from users.permissions import IsStudent, IsCaretakerOrLandlord
 
 
@@ -20,6 +22,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
         elif self.action == 'verify':
             # Only caretakers/landlords can verify
             permission_classes = [permissions.IsAuthenticated, IsCaretakerOrLandlord]
+        elif self.action == 'upload':
+            # Only students can upload receipts
+            permission_classes = [permissions.IsAuthenticated, IsStudent]
         else:
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
@@ -35,6 +40,61 @@ class PaymentViewSet(viewsets.ModelViewSet):
         if ocr_match != payment.ocr_match:
             payment.ocr_match = ocr_match
             payment.save(update_fields=['ocr_match'])
+
+    @action(detail=False, methods=['post'], parser_classes=(MultiPartParser, FormParser))
+    def upload(self, request):
+        """
+        POST /api/payments/upload/
+        Accept a multipart file upload, extract data via Gemini OCR, and return extracted info.
+        """
+        if 'file' not in request.FILES:
+            return Response(
+                {"error": "No file provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        uploaded_file = request.FILES['file']
+        
+        # Save temporarily to extract data
+        import tempfile
+        import shutil
+        
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                for chunk in uploaded_file.chunks():
+                    tmp_file.write(chunk)
+                tmp_file_path = tmp_file.name
+            
+            # Extract receipt data using Gemini
+            extracted_data = extract_receipt_data(tmp_file_path)
+            
+            # Clean up temp file
+            try:
+                import os
+                os.unlink(tmp_file_path)
+            except:
+                pass
+            
+            if extracted_data is None:
+                return Response(
+                    {"error": "Failed to extract receipt data. Please try again."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            return Response(
+                {
+                    "success": True,
+                    "extracted_data": extracted_data,
+                    "message": "Receipt data extracted successfully"
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            print(f"[PaymentUpload] Error: {e}")
+            return Response(
+                {"error": f"Upload failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=True, methods=['patch'])
     def verify(self, request, pk=None):

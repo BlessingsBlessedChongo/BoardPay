@@ -28,7 +28,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = '__all__'
-        read_only_fields = ('status', 'verified_by', 'blockchain_tx_hash', 'submitted_at', 'ocr_match')
+        read_only_fields = ('status', 'verified_by', 'blockchain_tx_hash', 'submitted_at', 'ocr_match', 'ocr_data')
 
 class MaintenanceSerializer(serializers.ModelSerializer):
     class Meta:

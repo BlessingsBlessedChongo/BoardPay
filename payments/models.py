@@ -15,6 +15,7 @@ class Payment(models.Model):
     receipt_image = models.ImageField(upload_to='receipts/')
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.UNPAID)
     ocr_match = models.BooleanField(default=True)
+    ocr_data = models.JSONField(blank=True, null=True)  # Stores extracted receipt data: {amount, transaction_reference, date}
     submitted_at = models.DateTimeField(auto_now_add=True)
     verified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='verified_payments')
     blockchain_tx_hash = models.CharField(max_length=66, blank=True, null=True)  # future use

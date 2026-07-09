@@ -17,6 +17,10 @@ export default function BillingTimeline({ data }) {
   if (!data) return null;
 
   const { current_month_status, active_maintenance } = data;
+  
+  // Safety checks for data structure
+  if (!current_month_status || !active_maintenance) return null;
+  
   const steps = [STEP_LABELS.RECEIPT_UPLOADED, STEP_LABELS.CARETAKER_REVIEW, STEP_LABELS.SECURED_ON_LEDGER];
 
   return (
@@ -100,7 +104,9 @@ export default function BillingTimeline({ data }) {
             <div>
               <p className="text-slate-400 text-sm">Current Amount</p>
               <p className="text-3xl font-bold text-cyan-400">
-                {current_month_status.extracted_amount.toLocaleString()} ZMW
+                {current_month_status.extracted_amount 
+                  ? current_month_status.extracted_amount.toLocaleString() 
+                  : 'N/A'} ZMW
               </p>
             </div>
             <div className="text-right">
