@@ -5,7 +5,7 @@ import DashboardSkeleton from '../components/DashboardSkeleton';
 import WelcomeHero from '../components/WelcomeHero';
 import UploadPanel from '../components/UploadPanel';
 import BillingTimeline from '../components/BillingTimeline';
-import AIAssistant from '../components/AIAssistant';
+import GroqChatWidget from '../components/GroqChatWidget';
 
 export default function StudentDashboard() {
   const [role, setRole] = useState('Student');
@@ -109,21 +109,20 @@ export default function StudentDashboard() {
         </div>
       </main>
 
-      {/* AI Assistant Button & Drawer */}
-      <div className="fixed bottom-6 right-6 z-40">
-        {!showAI ? (
-          <button
-            onClick={() => setShowAI(true)}
-            className="relative w-14 h-14 bg-cyan-500/20 border border-cyan-500/50 rounded-full flex items-center justify-center 
-                       hover:bg-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 group"
-          >
-            <MessageCircle className="w-6 h-6 text-cyan-400" />
-            <span className="absolute inset-0 rounded-full animate-pulse bg-cyan-500/10" />
-          </button>
-        ) : (
-          <AIAssistant onClose={() => setShowAI(false)} />
-        )}
-      </div>
+      {/* Chat Widget */}
+      <GroqChatWidget isOpen={showAI} onClose={() => setShowAI(false)} />
+
+      {/* Chat Launcher Button */}
+      {!showAI && (
+        <button
+          onClick={() => setShowAI(true)}
+          className="fixed bottom-6 right-6 z-40 relative w-14 h-14 bg-cyan-500/20 border border-cyan-500/50 rounded-full flex items-center justify-center 
+                     hover:bg-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 group"
+        >
+          <MessageCircle className="w-6 h-6 text-cyan-400" />
+          <span className="absolute inset-0 rounded-full animate-pulse bg-cyan-500/10" />
+        </button>
+      )}
     </div>
   );
 }
