@@ -284,23 +284,26 @@ function Hero() {
           ))}
         </div>
 
-        {/* Hero dashboard placeholder */}
+        {/* Hero dashboard showcase mockup */}
         <div className="mt-14 relative">
           {/* Glow under image */}
           <div
-            className="absolute -inset-1 rounded-2xl opacity-30"
-            style={{ background: 'linear-gradient(135deg, #00f0ff22, transparent)', filter: 'blur(20px)' }}
+            className="absolute -inset-1 rounded-2xl opacity-40"
+            style={{ background: 'linear-gradient(135deg, #00f0ff44, transparent)', filter: 'blur(30px)' }}
           />
           <div
             className="relative rounded-2xl overflow-hidden"
-            style={{ border: '1px solid rgba(0,240,255,0.15)' }}
+            style={{ border: '1px solid rgba(0,240,255,0.2)' }}
           >
-            {/* Replace with actual screenshot */}
-            <Placeholder
-              text="Dashboard Preview – Replace with screenshot"
-              aspect=""
-              className="w-full h-[360px] sm:h-[460px]"
-            />
+            {/* Dashboard mockup showcase */}
+            <div className="w-full h-auto bg-gradient-to-br from-gray-900 via-gray-950 to-black">
+              <img
+                src="/boardPay(iii).png"
+                alt="BoardPay Dashboard Preview"
+                className="w-full h-auto object-cover rounded-2xl"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -316,25 +319,25 @@ const FEATURES = [
     Icon: Icon.Receipt,
     title: 'Upload & Verify Receipts',
     desc: 'Students snap a photo. Caretakers approve in seconds with a split-screen comparison view — no printing, no chasing.',
-    placeholder: 'Phone mockup: receipt upload UI',
+    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-t63sccEtbh6GmpliZEb1Pwo97XEBFm.png',
   },
   {
     Icon: Icon.Chain,
     title: 'Immutable Audit Trail',
     desc: 'Every verified payment is hashed and permanently recorded on-chain. Disputes become a thing of the past.',
-    placeholder: 'Blockchain / hash illustration',
+    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-dfLBMyQXhB01UelGgjsSVjZoQapmBs.png',
   },
   {
     Icon: Icon.Scan,
     title: 'Smart OCR Validation',
     desc: 'Our AI automatically reads the receipt text and checks if it matches the declared reference and amount. Zero manual cross-checking.',
-    placeholder: 'OCR scan animation',
+    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-0exZCwDmjlNyyECD67Mj0xzesm0dO3.png',
   },
   {
     Icon: Icon.Chart,
     title: 'Landlord Analytics',
     desc: 'Revenue trends, occupancy rates, and pending verifications — surfaced in real-time on a clean, minimal dashboard.',
-    placeholder: 'Mini chart / analytics widget',
+    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ls0FsxxJWMd6FUzXnDrDAgxkkrc2Pd.png',
   },
 ];
 
@@ -356,7 +359,7 @@ function Features() {
           {FEATURES.map((f, i) => (
             <FadeIn key={f.title} delay={i * 0.1}>
               <div
-                className="glass-card p-6 h-full flex flex-col gap-5 group hover:border-brand-accent/25 transition-all duration-300"
+                className="glass-card p-6 h-full flex flex-col gap-5 group hover:border-brand-accent/25 transition-all duration-300 overflow-hidden"
                 style={{ borderRadius: '1rem' }}
               >
                 <div className="flex items-start gap-4">
@@ -371,8 +374,15 @@ function Features() {
                     <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
                   </div>
                 </div>
-                {/* Replace with actual feature visual */}
-                <Placeholder text={f.placeholder} aspect="aspect-[16/7]" className="mt-auto" />
+                {/* Feature showcase image */}
+                <div className="mt-auto rounded-lg overflow-hidden border border-white/10">
+                  <img 
+                    src={f.image} 
+                    alt={f.title}
+                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
               </div>
             </FadeIn>
           ))}

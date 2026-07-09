@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, TrendingUp, Clock, CheckCheck } from 'lucide-react';
 
 // Mock data: exactly as specified for later API swap
 const MOCK_VERIFICATIONS = [
@@ -329,74 +329,129 @@ export default function CaretakerDashboard() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-md px-6 py-4">
-        <div className="flex items-center justify-between">
+      {/* Header with navigation */}
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a0a0f]/95 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Board<span className="text-cyan-500">Pay</span></h1>
-            <p className="text-xs text-gray-500 mt-0.5">Caretaker Verification Portal</p>
+            <h1 className="text-xl font-semibold tracking-tight">Board<span className="text-cyan-400">Pay</span></h1>
+            <p className="text-xs text-slate-400 mt-1">Payment Verification Portal</p>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowHotkeySheet(true)}
-              className="text-xs text-gray-400 hover:text-cyan-400 transition-colors px-3 py-1.5 rounded border border-gray-700 hover:border-cyan-500/30"
-            >
-              ? Shortcuts
-            </button>
-            <button
-              onClick={() => {
-                localStorage.clear();
-                window.location.href = '/login';
-              }}
-              className="text-xs text-gray-400 hover:text-red-400 transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
+          <button
+            onClick={() => setShowHotkeySheet(true)}
+            className="text-xs text-slate-400 hover:text-cyan-400 px-3 py-2 rounded-lg border border-white/10 hover:border-cyan-500/30 transition-all"
+          >
+            ? Shortcuts
+          </button>
         </div>
       </header>
 
-      {/* Toast */}
+      {/* Toast notification */}
       {toast && (
-        <div className="fixed top-20 right-6 z-50 bg-green-500/20 border border-green-500/40 text-green-200 px-4 py-3 rounded-lg text-sm font-medium animate-in slide-in-from-bottom-4">
+        <div className="fixed top-20 right-6 z-50 bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl text-sm font-medium animate-in slide-in-from-bottom-4">
           {toast}
         </div>
       )}
 
+      {/* Metrics Dashboard */}
+      <section className="px-6 py-8 border-b border-white/5 bg-gradient-to-b from-white/1 to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 mb-5">Today's Performance</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Pending Reviews */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-orange-500/40 transition-all">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending</p>
+                  <p className="text-2xl font-bold text-orange-400 mt-2">{verifications.length}</p>
+                  <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-500 to-orange-400"
+                      style={{ width: `${Math.min((currentIndex / verifications.length) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">Reviewing {currentIndex + 1}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Verified Count */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-green-500/40 transition-all">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Verified Today</p>
+                <p className="text-2xl font-bold text-green-400 mt-2">24</p>
+                <p className="text-xs text-slate-500 mt-3">+3 from yesterday</p>
+              </div>
+            </div>
+
+            {/* Approval Rate */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-cyan-500/40 transition-all">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Approval Rate</p>
+                <p className="text-2xl font-bold text-cyan-400 mt-2">98%</p>
+                <p className="text-xs text-slate-500 mt-3">High confidence</p>
+              </div>
+            </div>
+
+            {/* Average Time */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-slate-400/40 transition-all">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Avg Review Time</p>
+                <p className="text-2xl font-bold text-slate-300 mt-2">45s</p>
+                <p className="text-xs text-slate-500 mt-3">Per payment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Main content */}
       <main className="px-6 py-8">
         {verifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <p className="text-gray-400">No pending verifications</p>
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="text-6xl mb-4">✓</div>
+            <p className="text-slate-300 text-lg font-medium">All payments verified</p>
+            <p className="text-slate-500 text-sm mt-2">Great work! Check back later for more payments to review.</p>
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto">
-            {/* Verification counter */}
-            <div className="mb-4 text-xs text-gray-500">
-              Payment {currentIndex + 1} of {verifications.length}
+          <div className="max-w-7xl mx-auto">
+            {/* Progress indicator */}
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-200">Payment Review</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  <span className="font-semibold text-cyan-400">{currentIndex + 1}</span>
+                  {' '}
+                  <span>of</span>
+                  {' '}
+                  <span className="font-semibold">{verifications.length}</span>
+                </p>
+              </div>
+              <div className="text-xs text-slate-400">
+                {Math.round(((currentIndex + 1) / verifications.length) * 100)}% complete
+              </div>
             </div>
 
             {/* Split layout: responsive (row on desktop, column on mobile) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* LEFT: Receipt viewer */}
-              <div className="flex flex-col gap-3">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                  Receipt Image (OCR Highlights)
-                </div>
-                <div className="aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 bg-gray-900/50">
-                  <ReceiptViewer data={current} />
+              <div className="lg:col-span-2">
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Receipt Image</p>
+                  <div className="aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 bg-gray-900/40 shadow-lg">
+                    <ReceiptViewer data={current} />
+                  </div>
                 </div>
               </div>
 
               {/* RIGHT: Verification controls */}
               <div className="flex flex-col gap-4">
                 {/* Student info card */}
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 space-y-4">
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">Student</p>
-                    <p className="text-lg font-semibold">{current.student_name}</p>
-                    <p className="text-sm text-gray-400">{current.room}</p>
+                <div className="bg-gradient-to-br from-white/5 to-white/2 backdrop-blur-md border border-white/10 rounded-2xl p-6 space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Student</p>
+                    <p className="text-lg font-semibold text-white">{current.student_name}</p>
+                    <p className="text-sm text-slate-400">{current.room}</p>
                   </div>
 
                   <div className="pt-4 border-t border-white/10 space-y-3">
@@ -419,14 +474,14 @@ export default function CaretakerDashboard() {
                     {/* Overall match badge */}
                     <div className="pt-3 border-t border-white/10">
                       {current.ocr_data.match ? (
-                        <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
+                        <div className="flex items-center gap-2 text-green-300 text-sm font-semibold">
                           <CheckCircle size={18} />
-                          All fields verified
+                          All verified
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-orange-400 text-sm font-medium">
+                        <div className="flex items-center gap-2 text-orange-300 text-sm font-semibold">
                           <AlertCircle size={18} />
-                          Review discrepancies
+                          Review needed
                         </div>
                       )}
                     </div>
@@ -434,26 +489,28 @@ export default function CaretakerDashboard() {
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col gap-2">
                   <button
                     onClick={handleApprove}
                     disabled={isLoading}
-                    className="flex-1 bg-cyan-500 text-black font-semibold py-3 rounded-lg hover:bg-cyan-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    className="w-full px-4 py-3 bg-cyan-500 hover:bg-cyan-600 text-black font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    {isLoading ? '…' : 'Approve (A)'}
+                    {isLoading ? 'Processing…' : '✓ Approve'}
                   </button>
                   <button
                     onClick={() => setShowRejectModal(true)}
                     disabled={isLoading}
-                    className="flex-1 border border-orange-500 text-orange-400 font-semibold py-3 rounded-lg hover:bg-orange-500/10 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    className="w-full px-4 py-3 bg-white/5 hover:bg-orange-500/10 border border-white/10 hover:border-orange-500/40 text-orange-400 font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    {isLoading ? '…' : 'Reject (R)'}
+                    {isLoading ? 'Processing…' : '✕ Reject'}
                   </button>
                 </div>
 
-                {/* Help text */}
-                <p className="text-xs text-gray-500 text-center pt-2">
-                  Press <kbd className="bg-gray-800 px-1.5 rounded">?</kbd> for all keyboard shortcuts
+                {/* Keyboard hint */}
+                <p className="text-xs text-slate-500 text-center pt-1">
+                  <button onClick={() => setShowHotkeySheet(true)} className="text-cyan-400 hover:underline">
+                    Press ? for shortcuts
+                  </button>
                 </p>
               </div>
             </div>

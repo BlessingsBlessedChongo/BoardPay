@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { scaleLinear } from 'd3';
-import { Sparkles, FileText } from 'lucide-react';
+import { Sparkles, FileText, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
+import AuditTrail from '../components/AuditTrail.jsx';
 
 // Mock financial flows data (matches spec exactly)
 const FINANCIAL_FLOWS = {
@@ -453,12 +454,146 @@ export default function LandlordDashboard() {
         </div>
       </header>
 
+      {/* Analytics Metrics Bar */}
+      <section className="px-6 py-8 border-b border-white/5 bg-gradient-to-b from-white/2 to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-lg font-semibold mb-6 text-white">Revenue & Collections</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Total Revenue */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-cyan-500/30 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+                  <p className="text-2xl font-bold text-white mt-1">ZMW 27,000</p>
+                </div>
+                <DollarSign className="w-8 h-8 text-cyan-400/30" />
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <TrendingUp className="w-3 h-3 text-green-400" />
+                <span className="text-green-400">+12.5% vs last month</span>
+              </div>
+            </div>
+
+            {/* Collections Today */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-green-500/30 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Collected Today</p>
+                  <p className="text-2xl font-bold text-green-400 mt-1">ZMW 4,500</p>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                  <span className="text-xs font-bold text-green-400">✓</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400">24 payments verified</p>
+            </div>
+
+            {/* Outstanding */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-orange-500/30 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Outstanding</p>
+                  <p className="text-2xl font-bold text-orange-400 mt-1">ZMW 7,500</p>
+                </div>
+                <AlertCircle className="w-8 h-8 text-orange-400/30" />
+              </div>
+              <p className="text-xs text-slate-400">3 delinquent accounts</p>
+            </div>
+
+            {/* Collection Rate */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:border-cyan-500/30 transition-all">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Collection Rate</p>
+                  <p className="text-2xl font-bold text-cyan-400 mt-1">78.2%</p>
+                </div>
+                <div className="relative w-8 h-8">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(0,240,255,0.1)" strokeWidth="3" />
+                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#00f0ff" strokeWidth="3" 
+                            strokeDasharray={`${78.2 / 100 * 100}`} strokeDashoffset="0" strokeLinecap="round" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400">Month-to-date</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Revenue Chart */}
+      <section className="px-6 py-8 border-b border-white/5 bg-gradient-to-b from-white/1 to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-lg font-semibold mb-6 text-white">Revenue Trends (7-Day Timeline)</h2>
+          
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+            {/* Mini line chart using SVG */}
+            <svg width="100%" height="200" viewBox="0 0 700 200" className="w-full" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#00f0ff" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#00f0ff" />
+                  <stop offset="100%" stopColor="#0ea5e9" />
+                </linearGradient>
+              </defs>
+
+              {/* Grid lines */}
+              {[0, 1, 2, 3, 4].map((i) => (
+                <line key={i} x1="40" y1={40 + i * 40} x2="680" y2={40 + i * 40} stroke="rgba(0,240,255,0.1)" strokeWidth="1" />
+              ))}
+
+              {/* Area fill */}
+              <path d="M 80 100 L 180 70 L 280 90 L 380 50 L 480 75 L 580 45 L 680 65 L 680 180 L 80 180 Z" fill="url(#revenueGradient)" />
+
+              {/* Line */}
+              <polyline points="80,100 180,70 280,90 380,50 480,75 580,45 680,65" fill="none" stroke="url(#lineGradient)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+              {/* Data points */}
+              {[{x: 80, val: 3200}, {x: 180, val: 4100}, {x: 280, val: 3800}, {x: 380, val: 5200}, {x: 480, val: 4500}, {x: 580, val: 5800}, {x: 680, val: 4500}].map((point, i) => (
+                <g key={i}>
+                  <circle cx={point.x} cy={point.y === 100 ? 100 : point.y} r="5" fill="rgba(0,240,255,0.8)" stroke="#00f0ff" strokeWidth="2" />
+                  <text x={point.x} y={point.y === 100 ? 70 : point.y - 15} textAnchor="middle" fontSize="11" fill="#00f0ff" fontWeight="600">
+                    {point.val / 1000}k
+                  </text>
+                </g>
+              ))}
+
+              {/* X-axis labels */}
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                <text key={day} x={80 + i * 100} y="195" textAnchor="middle" fontSize="12" fill="rgba(255,255,255,0.6)">
+                  {day}
+                </text>
+              ))}
+            </svg>
+
+            {/* Legend */}
+            <div className="flex gap-6 mt-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{background: 'linear-gradient(90deg, #00f0ff, #0ea5e9)'}} />
+                <span className="text-slate-300">Revenue (ZMW)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+                <span className="text-slate-300">On-time payments</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Main Content */}
       <main className="px-6 py-8 max-w-7xl mx-auto">
         {/* Toast */}
         {/* (Toast handled within components) */}
 
         <div className="space-y-6">
+          {/* 0. Immutable Audit Trail */}
+          <AuditTrail />
+
           {/* 1. Financial Flow Map */}
           <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4">Financial Flow — This Month</h2>
