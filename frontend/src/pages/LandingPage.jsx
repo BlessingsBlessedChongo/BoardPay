@@ -284,23 +284,26 @@ function Hero() {
           ))}
         </div>
 
-        {/* Hero dashboard placeholder */}
+        {/* Hero dashboard showcase mockup */}
         <div className="mt-14 relative">
           {/* Glow under image */}
           <div
-            className="absolute -inset-1 rounded-2xl opacity-30"
-            style={{ background: 'linear-gradient(135deg, #00f0ff22, transparent)', filter: 'blur(20px)' }}
+            className="absolute -inset-1 rounded-2xl opacity-40"
+            style={{ background: 'linear-gradient(135deg, #00f0ff44, transparent)', filter: 'blur(30px)' }}
           />
           <div
             className="relative rounded-2xl overflow-hidden"
-            style={{ border: '1px solid rgba(0,240,255,0.15)' }}
+            style={{ border: '1px solid rgba(0,240,255,0.2)' }}
           >
-            {/* Replace with actual screenshot */}
-            <Placeholder
-              text="Dashboard Preview – Replace with screenshot"
-              aspect=""
-              className="w-full h-[360px] sm:h-[460px]"
-            />
+            {/* Dashboard mockup showcase */}
+            <div className="w-full h-auto bg-gradient-to-br from-gray-900 via-gray-950 to-black">
+              <img
+                src="/boardPay(iii).png"
+                alt="BoardPay Dashboard Preview"
+                className="w-full h-auto object-cover rounded-2xl"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>

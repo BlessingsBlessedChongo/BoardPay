@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, TrendingUp, Clock, CheckCheck } from 'lucide-react';
 
 // Mock data: exactly as specified for later API swap
 const MOCK_VERIFICATIONS = [
@@ -362,6 +362,98 @@ export default function CaretakerDashboard() {
           {toast}
         </div>
       )}
+
+      {/* Metrics Dashboard */}
+      <section className="px-6 py-8 border-b border-white/5 bg-gradient-to-b from-white/2 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-lg font-semibold mb-6 text-white">Operational Metrics</h2>
+          
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Pending Reviews */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-orange-500/30 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Pending Review</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-orange-400">{verifications.length}</span>
+                    <span className="text-xs text-slate-400">payments</span>
+                  </div>
+                </div>
+                <Clock className="w-10 h-10 text-orange-400/30" />
+              </div>
+              
+              {/* Progress bar */}
+              <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all"
+                  style={{ width: `${Math.min((currentIndex / verifications.length) * 100, 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-3">Current: Payment {currentIndex + 1}</p>
+            </div>
+
+            {/* Verified Today */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-green-500/30 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Verified Today</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-green-400">24</span>
+                    <span className="text-xs text-slate-400">verified</span>
+                  </div>
+                </div>
+                <CheckCheck className="w-10 h-10 text-green-400/30" />
+              </div>
+              
+              {/* Mini sparkline-like bar chart */}
+              <div className="flex items-end gap-1 h-10">
+                {[40, 55, 35, 70, 85, 60, 95].map((height, i) => (
+                  <div 
+                    key={i} 
+                    className="flex-1 bg-gradient-to-t from-green-500/40 to-green-400/20 rounded-t"
+                    style={{ height: `${height}%` }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-slate-400 mt-2">7-day trend</p>
+            </div>
+
+            {/* Occupancy Status */}
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Occupancy Rate</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-cyan-400">92%</span>
+                    <span className="text-xs text-slate-400">occupied</span>
+                  </div>
+                </div>
+                <TrendingUp className="w-10 h-10 text-cyan-400/30" />
+              </div>
+              
+              {/* Circular progress SVG */}
+              <svg width="100%" height="60" viewBox="0 0 200 60" className="max-w-full">
+                <defs>
+                  <linearGradient id="occupancyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8" />
+                  </linearGradient>
+                </defs>
+                {/* Background track */}
+                <rect x="10" y="20" width="180" height="8" rx="4" fill="rgba(255,255,255,0.05)" />
+                {/* Filled portion */}
+                <rect x="10" y="20" width="165.6" height="8" rx="4" fill="url(#occupancyGrad)" />
+                {/* Milestone markers */}
+                {[25, 50, 75, 100].map((pct) => (
+                  <line key={pct} x1={10 + (pct * 1.8)} y1="14" x2={10 + (pct * 1.8)} y2="18" stroke="rgba(0,240,255,0.2)" strokeWidth="1" />
+                ))}
+              </svg>
+              <p className="text-xs text-slate-400 mt-2">Room allocation trend</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Main content */}
       <main className="px-6 py-8">

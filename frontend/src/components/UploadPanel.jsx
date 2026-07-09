@@ -149,13 +149,14 @@ export default function UploadPanel({ onDataUpdate }) {
 
   if (previewData && uploadState === 'success') {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md 
-                      shadow-2xl hover:shadow-cyan-500/5 transition-all duration-300 p-8">
-        
-        <div className="flex items-center gap-3 mb-6">
-          <CheckCircle className="w-6 h-6 text-green-400" />
-          <h2 className="text-2xl font-bold text-white">Payment Proof Analyzed</h2>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md 
+                        shadow-2xl hover:shadow-cyan-500/5 transition-all duration-300 p-8">
+          
+          <div className="flex items-center gap-3 mb-6">
+            <CheckCircle className="w-6 h-6 text-green-400" />
+            <h2 className="text-2xl font-bold text-white">Payment Proof Analyzed</h2>
+          </div>
 
         {/* OCR Match Status Badge */}
         <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-green-500/10 to-transparent 
@@ -279,11 +280,13 @@ export default function UploadPanel({ onDataUpdate }) {
             </button>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   return (
+    <div className="max-w-2xl mx-auto px-4 sm:px-6">
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md 
                     shadow-2xl hover:shadow-cyan-500/5 transition-all duration-300 p-8">
       
@@ -382,6 +385,7 @@ export default function UploadPanel({ onDataUpdate }) {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

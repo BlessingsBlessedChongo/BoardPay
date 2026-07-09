@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function TopNav({ role, setRole }) {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const navigate = useNavigate();
 
   const roles = ['Student', 'Caretaker', 'Landlord'];
@@ -11,7 +12,7 @@ export default function TopNav({ role, setRole }) {
   const handleRoleSwitch = (newRole) => {
     setRole(newRole);
     setShowRoleMenu(false);
-    // Could navigate to different dashboard routes here
+    setMobileDrawerOpen(false);
   };
 
   const handleLogout = () => {
@@ -20,7 +21,7 @@ export default function TopNav({ role, setRole }) {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0a0f]/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -29,8 +30,8 @@ export default function TopNav({ role, setRole }) {
           </span>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-6">
+        {/* Desktop Right Section */}
+        <div className="hidden md:flex items-center gap-6">
           {/* Role Switcher */}
           <div className="relative">
             <button
@@ -64,17 +65,69 @@ export default function TopNav({ role, setRole }) {
             )}
           </div>
 
-          {/* Logout */}
+          {/* Logout Button - Icon Only */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-slate-400 text-sm font-medium
-                     hover:text-red-400 hover:bg-red-500/5 transition-colors duration-200"
+            className="relative p-2 rounded-lg text-slate-400 hover:text-cyan-400 transition-all duration-200 group"
+            title="Sign out"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign out</span>
+            <LogOut className="w-5 h-5" />
+            {/* Glowing hover state */}
+            <div className="absolute inset-0 rounded-lg bg-cyan-500/0 group-hover:bg-cyan-500/10 transition-all duration-200" />
+            {/* Tooltip on hover */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded bg-cyan-400 text-black text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              Sign out
+            </div>
           </button>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+          className="md:hidden p-2 rounded-lg text-slate-400 hover:text-cyan-400 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {mobileDrawerOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <Menu className="w-6 h-6" />
+          )}
+        </button>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileDrawerOpen && (
+        <div className="md:hidden bg-white/5 border-t border-white/10 backdrop-blur-md px-4 py-4 space-y-4">
+          {/* Role Switcher - Mobile */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block px-2">
+              Switch Role
+            </label>
+            {roles.map((r) => (
+              <button
+                key={r}
+                onClick={() => handleRoleSwitch(r)}
+                className={`w-full px-4 py-2.5 rounded-lg text-left text-sm font-medium transition-all
+                  ${role === r 
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50' 
+                    : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 hover:text-cyan-300'
+                  }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {/* Logout Button - Mobile */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 text-sm font-medium hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-500/50 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign out</span>
+          </button>
+        </div>
+      )}
 
       <style jsx>{`
         .glow-text {
