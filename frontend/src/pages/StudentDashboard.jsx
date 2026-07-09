@@ -1,178 +1,129 @@
-import React, { useState } from 'react';
-import api from '../api/axios.js';
+import React, { useState, useEffect, useRef } from 'react';
+import { Upload, Mic, Send, MessageCircle, X, CheckCircle, AlertCircle, Zap, ChevronRight } from 'lucide-react';
+import TopNav from '../components/TopNav';
+import DashboardSkeleton from '../components/DashboardSkeleton';
+import WelcomeHero from '../components/WelcomeHero';
+import UploadPanel from '../components/UploadPanel';
+import BillingTimeline from '../components/BillingTimeline';
+import AIAssistant from '../components/AIAssistant';
 
 export default function StudentDashboard() {
-  const [form, setForm] = useState({
-    lease: '',
-    amount: '',
-    transaction_ref: '',
-    receipt_image: null,
-  });
-  const [status, setStatus] = useState(null); // { type: 'success'|'error', msg: string }
-  const [loading, setLoading] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [role, setRole] = useState('Student');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showAI, setShowAI] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'receipt_image') {
-      setForm((f) => ({ ...f, receipt_image: files[0] }));
-      setFileName(files[0]?.name || '');
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
-  };
+  // Fetch dashboard data on mount
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Simulate API latency (1.2s) as per spec
+        await new Promise(resolve => setTimeout(resolve, 1200));
+        
+        // Mock data matching the schema from spec
+        const mockData = {
+          student_name: "Chanda Mwamba",
+          room_display: "Room 4B, Ndola Campus Housing",
+          payment_streak: 4,
+          next_due_date: "2026-07-25",
+          days_remaining: 14,
+          current_month_status: {
+            current_step: "CARETAKER_REVIEW",
+            steps_completed: ["RECEIPT_UPLOADED"],
+            steps_pending: ["CARETAKER_REVIEW", "SECURED_ON_LEDGER"],
+            extracted_amount: 2500
+          },
+          active_maintenance: [
+            {
+              id: 102,
+              title: "Leaking Tap in Bathroom",
+              status: "IN_PROGRESS",
+              created_at_relative: "2 days ago"
+            },
+            {
+              id: 103,
+              title: "Broken Light Fixture - Common Area",
+              status: "PENDING",
+              created_at_relative: "1 day ago"
+            }
+          ]
+        };
+        
+        setDashboardData(mockData);
+      } catch (err) {
+        setError('Failed to load dashboard. Please try again.');
+        console.error('[v0] Dashboard fetch error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus(null);
-    setLoading(true);
+    fetchDashboard();
+  }, []);
 
-    try {
-      const data = new FormData();
-      data.append('lease', form.lease);
-      data.append('amount', form.amount);
-      data.append('transaction_ref', form.transaction_ref);
-      if (form.receipt_image) data.append('receipt_image', form.receipt_image);
-
-      await api.post('/payments/', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      setStatus({ type: 'success', msg: 'Payment submitted successfully! Your caretaker will verify it shortly.' });
-      setForm({ lease: '', amount: '', transaction_ref: '', receipt_image: null });
-      setFileName('');
-    } catch (err) {
-      const detail = err?.response?.data?.detail || err?.response?.data || err?.message || 'Submission failed.';
-      setStatus({ type: 'error', msg: typeof detail === 'string' ? detail : JSON.stringify(detail) });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/login';
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <TopNav role={role} setRole={setRole} />
+        <main className="flex items-center justify-center px-4 py-24">
+          <div className="text-center max-w-md">
+            <AlertCircle className="w-12 h-12 text-orange-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-white mb-2">Error Loading Dashboard</h2>
+            <p className="text-slate-400 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2.5 bg-cyan-500 text-black font-semibold rounded-lg hover:brightness-110 transition-all"
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
-      {/* Top bar */}
-      <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <span className="text-brand-accent font-bold text-xl tracking-tighter">BoardPay</span>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-sm">Student Portal</span>
-          <button
-            onClick={handleLogout}
-            className="text-xs text-gray-500 hover:text-red-400 transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col">
+      <TopNav role={role} setRole={setRole} />
 
-      {/* Main */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="glass-card w-full max-w-lg p-8">
-          <h2 className="text-2xl font-bold text-white mb-1">Submit Rent Payment</h2>
-          <p className="text-gray-400 text-sm mb-7">
-            Upload your payment proof and we'll match it automatically.
-          </p>
-
-          {/* Status banner */}
-          {status && (
-            <div
-              className={`mb-6 px-4 py-3 rounded-lg text-sm border ${
-                status.type === 'success'
-                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                  : 'bg-red-500/10 border-red-500/30 text-red-400'
-              }`}
-            >
-              {status.msg}
-            </div>
+      {/* Main Content */}
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Welcome Hero */}
+          {isLoading ? (
+            <DashboardSkeleton />
+          ) : (
+            <>
+              <WelcomeHero data={dashboardData} />
+              
+              {/* Async Upload & Preview */}
+              <UploadPanel />
+              
+              {/* Billing Timeline & Maintenance */}
+              <BillingTimeline data={dashboardData} />
+            </>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                Lease ID
-              </label>
-              <input
-                type="number"
-                name="lease"
-                className="input-dark"
-                placeholder="e.g. 42"
-                value={form.lease}
-                onChange={handleChange}
-                required
-                disabled={loading}
-                min="1"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                Amount (ZMW)
-              </label>
-              <input
-                type="number"
-                name="amount"
-                className="input-dark"
-                placeholder="e.g. 1500.00"
-                value={form.amount}
-                onChange={handleChange}
-                required
-                disabled={loading}
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                Transaction Reference
-              </label>
-              <input
-                type="text"
-                name="transaction_ref"
-                className="input-dark"
-                placeholder="e.g. BP20240701ABC"
-                value={form.transaction_ref}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">
-                Receipt Image
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-400 group-hover:border-brand-accent/50 transition-colors truncate">
-                  {fileName || 'Choose file…'}
-                </div>
-                <span className="btn-cyan text-sm px-4 py-2.5 shrink-0">Browse</span>
-                <input
-                  type="file"
-                  name="receipt_image"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleChange}
-                  disabled={loading}
-                />
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-cyan w-full mt-2"
-            >
-              {loading ? 'Submitting…' : 'Submit Payment'}
-            </button>
-          </form>
         </div>
       </main>
+
+      {/* AI Assistant Button & Drawer */}
+      <div className="fixed bottom-6 right-6 z-40">
+        {!showAI ? (
+          <button
+            onClick={() => setShowAI(true)}
+            className="relative w-14 h-14 bg-cyan-500/20 border border-cyan-500/50 rounded-full flex items-center justify-center 
+                       hover:bg-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 group"
+          >
+            <MessageCircle className="w-6 h-6 text-cyan-400" />
+            <span className="absolute inset-0 rounded-full animate-pulse bg-cyan-500/10" />
+          </button>
+        ) : (
+          <AIAssistant onClose={() => setShowAI(false)} />
+        )}
+      </div>
     </div>
   );
 }
