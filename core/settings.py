@@ -29,8 +29,11 @@ SIMPLE_JWT = {
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# Celery/Redis are optional (see requirements.txt) and are not required for
+# the core payment-verification flow, which calls payments/blockchain.py
+# directly and synchronously. Uncomment these if you wire Celery back in.
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -64,12 +67,13 @@ INSTALLED_APPS = [
     'properties',
     'payments',
     'maintenance',
+    'analytics',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',                  # must come before CommonMiddleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',   # required for sessions
-    'corsheaders.middleware.CorsMiddleware',                  # keep it after SessionMiddleware (usual placement)
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

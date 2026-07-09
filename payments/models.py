@@ -14,6 +14,7 @@ class Payment(models.Model):
     transaction_ref = models.CharField(max_length=100)
     receipt_image = models.ImageField(upload_to='receipts/')
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.UNPAID)
+    ocr_match = models.BooleanField(default=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     verified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='verified_payments')
     blockchain_tx_hash = models.CharField(max_length=66, blank=True, null=True)  # future use

@@ -2,19 +2,22 @@
   "name": "blockchain",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "node": "hardhat node",
+    "build": "hardhat build",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "test": "hardhat test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "BoardPay on-chain payment audit log (Hardhat 3 + ethers v6)",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
-    "hardhat": "^3.9.1"
+    "hardhat": "^3.9.1",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.5"
   },
   "dependencies": {
     "ethers": "^6.17.0"
-  },
-  "type": "module"
+  }
 }
